@@ -1,3 +1,4 @@
+#initializing global variables
 kP_input = 0
 kI_input = 0
 kD_input = 0
@@ -15,8 +16,10 @@ num_motors = 0
 start_pose = [640,360,0]
 target = 0
 
+#allows user to select specifications of robot's drivetrain and mass
 def select_robot_specs():
     selected = False
+    #validates that the data can be used
     while not selected:
         try:
             print("Input Robot Specifications for a differential drive (Must be positive, negative values will be turned positive)")
@@ -32,13 +35,14 @@ def select_robot_specs():
             global track_width; track_width = abs(float(input("Track width (in) = ")))
             
             selected = True
-            
+        #error message
         except:
             print("Invalid Inputs, Try Again")
             
-
+#allows user to select PID constants
 def select_PID_constants():
     selected = False
+    #validates that the data can be used
     while not selected:
         try:
             print("Select the PID constants (Must be positive numbers, negative values will be turned positive)")
@@ -48,11 +52,15 @@ def select_PID_constants():
             global kI_input ; kI_input = abs(float(input("kI = ")))
             global kD_input ; kD_input = abs(float(input("kD = ")))
             selected = True
+        #error message
         except:
             print("Invalid Inputs, all inputs must be positive numbers")
 
+
+#allows user to select PID type, setup type, and target
 def type_select():
     selected = False
+    #validates that the data can be used
     while not selected:
         try:
             print("Answer with one of the letters in the square brackets")
@@ -80,6 +88,7 @@ def type_select():
             print("Invalid Inputs, answer with one of the letters in the brackets")
     
     selected = False
+    #validates that the data can be used
     while not selected:
         try:
             out_string = ""
@@ -88,22 +97,28 @@ def type_select():
             else:
                 out_string += "Enter the inches the robot has to move (max 150 in): "
             
-            
+            #limits the starting error if above max
             global start_error; start_error = abs(float(input(out_string)))
+            #linear case
             if start_error > 150 and (not angular):
                 start_error = 150
+            #angular case
+            elif start_error > 180:
+                start_error = 180
            
                 
             selected = True
+        #error_message
         except:
             print("Invalid Inputs, must be numbers")
 
 
             
     
-
+#allows user to specify more specific parameters to the PID loops
 def advanced_select():
     selected = False
+    #validates that the data can be used
     while not selected:
         try:
             print("Advanced constants selection (Must be positive numbers, negative values will be turned positive): ")
@@ -116,11 +131,13 @@ def advanced_select():
                 out_string += "Inches Tolerance"
             global tolerance; tolerance = abs(float(input(out_string)))
             selected = True
+        #error message
         except:
             print("Invalid Inputs, all inputs must be positive numbers")
     
 
 def selection():
+    #setsup terminal selection and target
     global target
     select_robot_specs()
     select_PID_constants()

@@ -5,8 +5,9 @@ import math
 screen = 0
 screen_width = 1280
 screen_height = 720
-error_data = []
 
+
+#initializes text font
 pygame.font.init()
 font = pygame.font.SysFont('freesanbold.ttf', 50)
 
@@ -14,15 +15,16 @@ font = pygame.font.SysFont('freesanbold.ttf', 50)
 def create_window():
     global screen; screen = pygame.display.set_mode([1280,720])
 
-
-
-
+#instances list
 instances = []
 
+#unit conversions
 M_PI = 3.1415926
 DEGREES = M_PI/180
 
+#Object to easily display text with changing variable
 class DisplayVariable:
+    #takes in coordinates, text, variable, and color
     def __init__(self, x_, y_, text_, variable_, color_):
         self.x = x_
         self.y = y_
@@ -30,13 +32,15 @@ class DisplayVariable:
         self.variable = variable_
         self.color = color_
         instances.append(self)
-        
+    
+    #renders itself
     def render(self):
         output_text = font.render(self.text + str(self.variable), True, self.color )
         output_text_rect = output_text.get_rect()
         output_text_rect.center = (self.x, self.y)
         screen.blit(output_text, output_text_rect)
-        
+
+#Object to easily display text. Inherits from DisplayVariable but has no variable part
 class DisplayText(DisplayVariable):
     def render(self):
         output_text = font.render(self.text, True, self.color )
@@ -45,6 +49,7 @@ class DisplayText(DisplayVariable):
         screen.blit(output_text, output_text_rect)
 
 
+#Object to easily add buttons to screen
 class Button:
     
     pressed = False
@@ -72,15 +77,16 @@ class Button:
     
     #checks to see if the mouse coordinates are over the button
     def check_press(self, mouse_x, mouse_y):
+        #updates pressed status accordingly
         if self.x + self.width > mouse_x and self.x < mouse_x and self.y + self.height > mouse_y and self.y < mouse_y:
             self.pressed = True
-            print("pressed")
         else:
             self.pressed = False           
         
-      
+#Object to easily display vector/line segment to screen
 class Vector:
     
+    #initializes with starting coordinates, angle, magnitude, and color
     def __init__(self, x_, y_, theta_, magnitude_, color_):
         self.x = x_
         self.y = y_
@@ -88,12 +94,13 @@ class Vector:
         self.magnitude = magnitude_
         self.color = color_
         instances.append(self)
-        
+    
+    #renders itself by converting polar coordinates to cartesian coordinates to find the endpoints    
     def render(self):
         pygame.draw.line(screen, self.color, (self.x,self.y), (self.x + self.magnitude * math.cos(self.theta * DEGREES), (self.y + self.magnitude * math.sin(self.theta * DEGREES))))
     
 
-    
+#allows images to be rotated around center  
 def Center_Rotate(surf, image, pos, originPos, angle):
     
     # offset from pivot to center
@@ -112,6 +119,3 @@ def Center_Rotate(surf, image, pos, originPos, angle):
 
     # rotate and blit the image
     surf.blit(rotated_image, rotated_image_rect)
-  
-    # draw rectangle around the image
-    #pygame.draw.rect(surf, (255, 0, 0), (*rotated_image_rect.topleft, *rotated_image.get_size()),2)
