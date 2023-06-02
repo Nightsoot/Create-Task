@@ -1,21 +1,29 @@
-#initializing global variables
-kP_input = 0
-kI_input = 0
-kD_input = 0
-settle_time = 250
-min_derv = 10000
-tolerance = 1
-angular = False
-advanced_setup = False
-start_error = 0
-mass_kg = 0
-rpm = 0
-wheel_diameter = 0
-track_width = 0
-num_motors = 0
-start_pose = [640,360,0]
-target = 0
 
+#initializing the data dictionary
+data_dictionary = {
+"kP" : 1,
+"kI" : 1,
+"kD" : 1,
+"settle time" : 250,
+"kinematics calculation" : True,
+"min derv" : 10000,
+"tolerance" : 1,
+"mass_kg" : 8,
+"rpm" : 360,
+"wheel diameter" : 3.25,
+"track width" : 14,
+"number of motors" : 6,
+"start_pose" : [640,360,0],
+"target" : 0,
+"input max linear speed" : 100,
+"input max linear acceleration" : 50,
+"input max angular speed" : 100,
+"input max angular acceleration" : 50
+}
+
+
+
+'''
 #allows user to select specifications of robot's drivetrain and mass
 def select_robot_specs():
     selected = False
@@ -128,7 +136,7 @@ def advanced_select():
             if(angular):
                 out_string += "Degrees Tolerance: "
             else:
-                out_string += "Inches Tolerance"
+                out_string += "Inches Tolerance: "
             global tolerance; tolerance = abs(float(input(out_string)))
             selected = True
         #error message
@@ -149,3 +157,4 @@ def selection():
     else:
         target = 1100
     print("Simulation can be stopped anytime by clicking anywhere on screen")
+'''

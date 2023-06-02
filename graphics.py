@@ -2,7 +2,7 @@ import pygame
 import math
 
 #display specs
-screen = 0
+screen = pygame.display.set_mode([1960,1080])
 screen_width = 1280
 screen_height = 720
 
@@ -11,12 +11,24 @@ screen_height = 720
 pygame.font.init()
 font = pygame.font.SysFont('freesanbold.ttf', 50)
 
-#creates the window so the window can be referenced but not created on startup
-def create_window():
-    global screen; screen = pygame.display.set_mode([1280,720])
+
 
 #instances list
 instances = []
+
+
+def render_instances():
+    #loops through graphics instances
+    for instance in instances:
+        if not instance.hidden:
+            instance.render()
+        else:
+            #if an instance has an active atrribute sets it off
+            try:
+                instance.active = False
+            except:
+                pass
+            
 
 #unit conversions
 M_PI = 3.1415926
@@ -25,12 +37,13 @@ DEGREES = M_PI/180
 #Object to easily display text with changing variable
 class DisplayVariable:
     #takes in coordinates, text, variable, and color
-    def __init__(self, x_, y_, text_, variable_, color_):
+    def __init__(self, x_, y_, text_, variable_, color_, hidden_ = True):
         self.x = x_
         self.y = y_
         self.text = text_
         self.variable = variable_
         self.color = color_
+        self.hidden = hidden_
         instances.append(self)
     
     #renders itself
@@ -49,55 +62,39 @@ class DisplayText(DisplayVariable):
         screen.blit(output_text, output_text_rect)
 
 
-#Object to easily add buttons to screen
-class Button:
-    
-    pressed = False
-    
-    #initializes a button with a on/off image and coordinates
-    def __init__(self, image_, x_, y_, pressed_image_ = None):
+class Image:
+    def __init__(self, x_, y_, image, hidden_ = True):
         self.x = x_
         self.y = y_
-        self.image = pygame.image.load(image_).convert()
-        self.width = self.image.get_width()
-        self.height = self.image.get_height()
+        self.image = pygame.image.load(image).convert()
+        self.hidden = hidden_
         instances.append(self)
         
-        if(pressed_image_ != None):
-            self.pressed_image = pygame.image.load(pressed_image_).convert()
-        else:
-            self.pressed_image = None
-    
     #renders the button to current state
     def render(self):
-       if self.pressed and self.pressed_image != None:
-           screen.blit(self.pressed_image, (self.x, self.y))
-       else:
-           screen.blit(self.image, (self.x, self.y))
-    
-    #checks to see if the mouse coordinates are over the button
-    def check_press(self, mouse_x, mouse_y):
-        #updates pressed status accordingly
-        if self.x + self.width > mouse_x and self.x < mouse_x and self.y + self.height > mouse_y and self.y < mouse_y:
-            self.pressed = True
-        else:
-            self.pressed = False           
+       if not self.hidden:
+            screen.blit(self.image, (self.x, self.y))
+
+
+
         
 #Object to easily display vector/line segment to screen
 class Vector:
     
     #initializes with starting coordinates, angle, magnitude, and color
-    def __init__(self, x_, y_, theta_, magnitude_, color_):
+    def __init__(self, x_, y_, theta_, magnitude_, color_, thickness_, hidden_ = True):
         self.x = x_
         self.y = y_
         self.theta = theta_
         self.magnitude = magnitude_
         self.color = color_
+        self.thickness = thickness_
+        self.hidden = hidden_
         instances.append(self)
     
     #renders itself by converting polar coordinates to cartesian coordinates to find the endpoints    
     def render(self):
-        pygame.draw.line(screen, self.color, (self.x,self.y), (self.x + self.magnitude * math.cos(self.theta * DEGREES), (self.y + self.magnitude * math.sin(self.theta * DEGREES))))
+        pygame.draw.line(screen, self.color, (self.x,self.y), (self.x + self.magnitude * math.cos(self.theta * DEGREES), (self.y + self.magnitude * math.sin(self.theta * DEGREES))), width=self.thickness)
     
 
 #allows images to be rotated around center  
@@ -119,3 +116,5 @@ def Center_Rotate(surf, image, pos, originPos, angle):
 
     # rotate and blit the image
     surf.blit(rotated_image, rotated_image_rect)
+    
+    

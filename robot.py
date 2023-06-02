@@ -1,6 +1,8 @@
 import graphics
 import pygame
 import time
+from input_data import data_dictionary
+
 
 
 #Unit Conversions
@@ -79,29 +81,16 @@ class Robot:
     moving = False
     
     #intializes the robot with given parameters
-    def __init__(self, x_, y_, theta_, PID_type, mass_kg, rpm, track_width_in_, wheel_diameter, num_motors):
+    def __init__(self, x_, y_, theta_, hidden_ = False):
         self.image = pygame.image.load("images/robot.png").convert()
         self.x = x_ - 36
         self.y = y_  - 53.5
         self.theta = theta_
+        self.hidden = hidden_
         self.render()
         self.moving = False
-        self.type = PID_type
-        #calculates max_speed from rpm and wheel diamter in m/s
-
-        self.max_speed_linear = ((rpm/60) * M_PI * wheel_diameter)/39.37
-        #in meters 
-        self.track_width_m = track_width_in_ * IN_TO_M
-        #Sovles for force based on torque and wheel radius
-        #Uses the force and mass of robot to solve for acceleration
-        #limits max theoretical acceleration to 50% to avoid overheating
-        self.max_acceleration_linear = .5 * ((2.1 * num_motors) / (wheel_diameter * IN_TO_M * .5))/mass_kg
-        #solves for angular speed by calculating the distance of a full rotation
-        #the robot can travel in one second and multpilies that fraction by 360
-        #so angular speed is in degrees/second
-        self.max_speed_angular = self.max_speed_linear/(self.track_width_m * M_PI) * 360  
-        #uses the tangential speed and curvature equation to solve for angular acceleration converted to degrees/second^2
-        self.max_acceleration_angular = self.max_speed_linear/(self.track_width_m / 2) * RADIANS
+        self.sync_constants()
+        
 
         graphics.instances.append(self)
     
@@ -109,8 +98,47 @@ class Robot:
     def render(self):
         width, height = self.image.get_size()
         graphics.Center_Rotate(graphics.screen, self.image, (self.x,self.y), (width/2, height/2), self.theta )
+        
+    def sync_constants(self):
+        #syncs the constants given by the widgets to the robot
+        self.kP = data_dictionary["kP"]
+        self.kI = data_dictionary["kI"]
+        self.kD = data_dictionary["kD"]
+        self.settle_time = data_dictionary["settle time"]
+        self.min_derv = data_dictionary["min derv"]
+        self.tolerance = data_dictionary["tolerance"]
+        self.calculate_kinematics = data_dictionary["kinematics calculation"]
+        
+        
+        #if using the calculate kinematics constraints
+        #the function will sync the required constants and calculate the constraints
+        if(self.calculate_kinematics):
+            self.rpm = data_dictionary["rpm"]
+            self.mass_kg = data_dictionary["mass_kg"]
+            self.wheel_diameter = data_dictionary["wheel diameter"]
+            self.track_width_m = data_dictionary["track width"] * IN_TO_M
+            self.num_motors = data_dictionary["number of motors"]
+            self.calculate_constraints()
+        #otherwise, it'll use the input constraints
+        else:
+            self.max_speed_linear = data_dictionary["input max linear speed"]
+            self.max_speed_angular = data_dictionary["input max angular speed"]
+            self.max_acceleration_linear = data_dictionary["input max linear acceleration"]
+            self.max_acceleration_angular = data_dictionary["input max angular acceleration"]
+        
 
-
+    def calculate_constraints(self):
+        #calculates max_speed from rpm and wheel diamter in m/s
+        self.max_speed_linear = ((self.rpm/60) * M_PI * self.wheel_diameter)/39.37
+        #Sovles for force based on torque and wheel radius
+        #Uses the force and mass of robot to solve for acceleration
+        self.max_acceleration_linear = ((2.1 * self.num_motors) / (self.wheel_diameter * IN_TO_M * .5))/self.mass_kg
+        #solves for angular speed by calculating the distance of a full rotation
+        #the robot can travel in one second and multpilies that fraction by 360
+        #so angular speed is in degrees/second
+        self.max_speed_angular = self.max_speed_linear/(self.track_width_m * M_PI) * 360  
+        #uses the tangential speed and curvature equation to solve for angular acceleration converted to degrees/second^2
+        self.max_acceleration_angular = self.max_speed_linear/(self.track_width_m / 2) * RADIANS
         
     def angular_PID(self, kP, kI, kD, settle_time, min_derv, target, tolerance):
         #initalizes variables
